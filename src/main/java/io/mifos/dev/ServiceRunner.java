@@ -55,6 +55,8 @@ import io.mifos.provisioner.api.v1.domain.*;
 import io.mifos.reporting.api.v1.client.ReportManager;
 import io.mifos.rhythm.api.v1.client.RhythmManager;
 import io.mifos.rhythm.api.v1.events.BeatEvent;
+import io.mifos.sync.api.v1.PermittableGroupIds;
+import io.mifos.sync.api.v1.client.SyncManager;
 import io.mifos.teller.api.v1.client.TellerManager;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
@@ -106,6 +108,7 @@ public class ServiceRunner {
   private static Microservice<ReportManager> reportManager;
   private static Microservice<ChequeManager> chequeManager;
   private static Microservice<PayrollManager> payrollManager;
+  private static Microservice<SyncManager> syncManager;
 
 
   private static DB embeddedMariaDb;
@@ -155,6 +158,7 @@ public class ServiceRunner {
 
   private boolean isPersistent;
   private boolean shouldProvision;
+  private static UserWithPassword syncUser;
 
   public ServiceRunner() {
     super();
@@ -231,10 +235,14 @@ public class ServiceRunner {
 
     ServiceRunner.payrollManager = new Microservice<>(PayrollManager.class, "payroll", "0.1.0-BUILD-SNAPSHOT", ServiceRunner.INTEGRATION_TEST_ENVIRONMENT);
     startService(generalProperties, ServiceRunner.payrollManager);
+
+    ServiceRunner.syncManager = new Microservice<>(SyncManager.class, "sync", "0.1.0-BUILD-SNAPSHOT", ServiceRunner.INTEGRATION_TEST_ENVIRONMENT);
+    startService(generalProperties, ServiceRunner.syncManager);
   }
 
   @After
   public void tearDown() throws Exception {
+    ServiceRunner.syncManager.kill();
     ServiceRunner.payrollManager.kill();
     ServiceRunner.chequeManager.kill();
     ServiceRunner.reportManager.kill();
@@ -276,6 +284,7 @@ public class ServiceRunner {
     System.out.println("Reporting Service: " + ServiceRunner.reportManager.getProcessEnvironment().serverURI());
     System.out.println("Cheque Service: " + ServiceRunner.chequeManager.getProcessEnvironment().serverURI());
     System.out.println("Payroll Service: " + ServiceRunner.payrollManager.getProcessEnvironment().serverURI());
+    System.out.println("Sync Service: " + ServiceRunner.syncManager.getProcessEnvironment().serverURI());
 
     boolean run = true;
 
@@ -338,7 +347,8 @@ public class ServiceRunner {
             ApplicationBuilder.create(ServiceRunner.tellerManager.name(), ServiceRunner.tellerManager.uri()),
             ApplicationBuilder.create(ServiceRunner.reportManager.name(), ServiceRunner.reportManager.uri()),
             ApplicationBuilder.create(ServiceRunner.chequeManager.name(), ServiceRunner.chequeManager.uri()),
-            ApplicationBuilder.create(ServiceRunner.payrollManager.name(), ServiceRunner.payrollManager.uri())
+            ApplicationBuilder.create(ServiceRunner.payrollManager.name(), ServiceRunner.payrollManager.uri()),
+            ApplicationBuilder.create(ServiceRunner.syncManager.name(), ServiceRunner.syncManager.uri())
     );
 
     final List<Tenant> tenantsToCreate = Arrays.asList(
@@ -441,7 +451,10 @@ public class ServiceRunner {
 
       provisionApp(tenant, ServiceRunner.payrollManager, io.mifos.payroll.api.v1.EventConstants.INITIALIZE);
 
+      provisionApp(tenant, ServiceRunner.syncManager, PermittableGroupIds.INITIALIZE);
+
       final UserWithPassword orgAdminUserPassword = createOrgAdminRoleAndUser(tenantAdminPassword.getAdminPassword());
+      syncUser  = createSyncRoleAndUser(tenantAdminPassword.getAdminPassword());
 
       createChartOfAccounts(orgAdminUserPassword);
 
@@ -602,6 +615,83 @@ public class ServiceRunner {
     return role;
   }
 
+  private UserWithPassword createSyncRoleAndUser(final String tenantAdminPassword) throws InterruptedException {
+    final Authentication adminAuthentication;
+    try (final AutoUserContext ignored = new AutoGuest()) {
+      adminAuthentication = ServiceRunner.identityManager.api().login(ADMIN_USER_NAME, tenantAdminPassword);
+    }
+
+    try (final AutoUserContext ignored = new AutoUserContext(ADMIN_USER_NAME, adminAuthentication.getAccessToken())) {
+      final Role syncRole = defineSyncUserRole();
+      ServiceRunner.identityManager.api().createRole(syncRole);
+      Assert.assertTrue(this.eventRecorder.wait(EventConstants.OPERATION_POST_ROLE, syncRole.getIdentifier()));
+
+      final UserWithPassword syncUser = new UserWithPassword();
+      syncUser.setIdentifier("sync");
+      syncUser.setPassword(Base64Utils.encodeToString("@uth3nt1c@t3".getBytes()));
+      syncUser.setRole(syncRole.getIdentifier());
+
+      ServiceRunner.identityManager.api().createUser(syncUser);
+      Assert.assertTrue(this.eventRecorder.wait(EventConstants.OPERATION_POST_USER, syncUser.getIdentifier()));
+      ServiceRunner.identityManager.api().logout();
+
+      enableUser(syncUser);
+      return syncUser;
+    }
+  }
+
+  private Role defineSyncUserRole() {
+
+    final Permission employeeAllPermission = new Permission();
+    employeeAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    employeeAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.office.api.v1.PermittableGroupIds.EMPLOYEE_MANAGEMENT);
+
+    final Permission officeAllPermission = new Permission();
+    officeAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    officeAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.office.api.v1.PermittableGroupIds.OFFICE_MANAGEMENT);
+
+    final Permission userAllPermission = new Permission();
+    userAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    userAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.identity.api.v1.PermittableGroupIds.IDENTITY_MANAGEMENT);
+
+    final Permission roleAllPermission = new Permission();
+    roleAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    roleAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.identity.api.v1.PermittableGroupIds.ROLE_MANAGEMENT);
+
+    final Permission selfManagementPermission = new Permission();
+    selfManagementPermission.setAllowedOperations(AllowedOperation.ALL);
+    selfManagementPermission.setPermittableEndpointGroupIdentifier(io.mifos.identity.api.v1.PermittableGroupIds.SELF_MANAGEMENT);
+
+    final Permission ledgerManagementPermission = new Permission();
+    ledgerManagementPermission.setAllowedOperations(AllowedOperation.ALL);
+    ledgerManagementPermission.setPermittableEndpointGroupIdentifier(io.mifos.accounting.api.v1.PermittableGroupIds.THOTH_LEDGER);
+
+    final Permission accountManagementPermission = new Permission();
+    accountManagementPermission.setAllowedOperations(AllowedOperation.ALL);
+    accountManagementPermission.setPermittableEndpointGroupIdentifier(io.mifos.accounting.api.v1.PermittableGroupIds.THOTH_ACCOUNT);
+
+    final Permission customerAllPermission = new Permission();
+    customerAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    customerAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.customer.PermittableGroupIds.CUSTOMER);
+
+    final Role role = new Role();
+    role.setIdentifier("syncgateway");
+    role.setPermissions(
+            Arrays.asList(
+                    employeeAllPermission,
+                    officeAllPermission,
+                    userAllPermission,
+                    roleAllPermission,
+                    selfManagementPermission,
+                    ledgerManagementPermission,
+                    accountManagementPermission,
+                    customerAllPermission
+            )
+    );
+
+    return role;
+  }
+
   private void enableUser(final UserWithPassword userWithPassword) throws InterruptedException {
     final Authentication passwordOnlyAuthentication
             = identityManager.api().login(userWithPassword.getIdentifier(), userWithPassword.getPassword());
@@ -644,4 +734,17 @@ public class ServiceRunner {
       properties.setProperty(MariaDBConstants.MARIADB_PASSWORD_PROP, this.environment.getProperty(ServiceRunner.CUSTOM_PROP_PREFIX + MariaDBConstants.MARIADB_PASSWORD_PROP));
     }
   }
+
+  public static UserWithPassword getSyncUser() {
+    return syncUser;
+  }
+
+  public static Microservice<IdentityManager> getIdentityManager() {
+    return identityManager;
+  }
+
+  public static Microservice<OrganizationManager> getOrganizationManager() {
+    return organizationManager;
+  }
+
 }
