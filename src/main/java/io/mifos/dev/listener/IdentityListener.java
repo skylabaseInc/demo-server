@@ -15,13 +15,23 @@
  */
 package io.mifos.dev.listener;
 
+import io.mifos.core.api.context.AutoGuest;
+import io.mifos.core.api.context.AutoUserContext;
+import io.mifos.core.lang.AutoTenantContext;
 import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
+import io.mifos.dev.ServiceRunner;
+import io.mifos.identity.api.v1.domain.Authentication;
+import io.mifos.identity.api.v1.domain.PermittableGroup;
+import io.mifos.identity.api.v1.domain.Role;
+import io.mifos.identity.api.v1.domain.User;
 import io.mifos.identity.api.v1.events.ApplicationPermissionEvent;
 import io.mifos.identity.api.v1.events.ApplicationPermissionUserEvent;
 import io.mifos.identity.api.v1.events.ApplicationSignatureEvent;
 import io.mifos.identity.api.v1.events.EventConstants;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
@@ -34,6 +44,12 @@ import org.springframework.stereotype.Component;
 public class IdentityListener {
 
   private final EventRecorder eventRecorder;
+
+  private final ServiceRunner serviceRunner = new ServiceRunner();
+
+  @Autowired
+  @Qualifier("test-logger")
+  private Logger logger;
 
   @Autowired
   public IdentityListener(final EventRecorder eventRecorder) {
@@ -49,6 +65,45 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_USER, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        logger.info("Created user {} with role {}", user.getIdentifier(), user.getRole());
+      }
+    }
+  }
+
+  @JmsListener(
+          subscription = EventConstants.DESTINATION,
+          destination = EventConstants.DESTINATION,
+          selector = EventConstants.SELECTOR_PUT_USER_ROLEIDENTIFIER
+  )
+  public void onChangeUserRole(
+          @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
+          final String payload) throws Exception {
+    eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_ROLEIDENTIFIER, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        logger.info("Updated user {} with role {}", user.getIdentifier(), user.getRole());
+      }
+    }
   }
 
   @JmsListener(
@@ -60,6 +115,20 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_PASSWORD, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        logger.info("Updated user {} password", user.getIdentifier());
+      }
+    }
   }
 
   @JmsListener(
@@ -71,6 +140,21 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_PERMITTABLE_GROUP, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        PermittableGroup permittableGroup = serviceRunner.getIdentityManager().api().getPermittableGroup(identifier);
+        logger.info("Created permittable group {}, ", permittableGroup.getIdentifier());
+        permittableGroup.getPermittables().forEach(permittableEndpoint -> logger.info("{}",permittableEndpoint.getGroupId()));
+      }
+    }
   }
 
   @JmsListener(
@@ -115,5 +199,61 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_ROLE, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
+        logger.info("Created role, {}", role.getIdentifier());
+        role.getPermissions().forEach(permission -> logger.info("{}", permission.getPermittableEndpointGroupIdentifier()));
+      }
+    }
+  }
+
+  @JmsListener(
+          subscription = EventConstants.DESTINATION,
+          destination = EventConstants.DESTINATION,
+          selector = EventConstants.SELECTOR_PUT_ROLE
+  )
+  public void onChangeRole(
+          @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
+          final String payload) throws Exception {
+    eventRecorder.event(tenant, EventConstants.OPERATION_PUT_ROLE, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
+        logger.info("Updated role, {}", role.getIdentifier());
+        role.getPermissions().forEach(permission -> logger.info("{}", permission.getPermittableEndpointGroupIdentifier()));
+      }
+    }
+  }
+
+  @JmsListener(
+          subscription = EventConstants.DESTINATION,
+          destination = EventConstants.DESTINATION,
+          selector = EventConstants.SELECTOR_DELETE_ROLE
+  )
+  public void onDeleteRole(
+          @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
+          final String payload) throws Exception {
+    eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
+
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    logger.info("Deleted role, {}", identifier);
   }
 }
