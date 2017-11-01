@@ -101,7 +101,7 @@ public class IdentityListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         User user = serviceRunner.getIdentityManager().api().getUser(identifier);
-        logger.info("Updated user {} with role {}", user.getIdentifier(), user.getRole());
+        logger.info("Updated user {} role {}", user.getIdentifier(), user.getRole());
       }
     }
   }
@@ -140,21 +140,6 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_PERMITTABLE_GROUP, payload, String.class);
-
-    String identifier = payload.replaceAll("^\"|\"$", "");
-    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
-      final Authentication syncGatewayAuthentication;
-
-      try (final AutoGuest ignored2 = new AutoGuest()) {
-        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
-      }
-
-      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        PermittableGroup permittableGroup = serviceRunner.getIdentityManager().api().getPermittableGroup(identifier);
-        logger.info("Created permittable group {}, ", permittableGroup.getIdentifier());
-        permittableGroup.getPermittables().forEach(permittableEndpoint -> logger.info("{}",permittableEndpoint.getGroupId()));
-      }
-    }
   }
 
   @JmsListener(
@@ -251,7 +236,6 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
-
 
     String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted role, {}", identifier);

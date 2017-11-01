@@ -158,6 +158,7 @@ public class ServiceRunner {
 
   private boolean isPersistent;
   private boolean shouldProvision;
+  private List<Tenant> allTenants;
   private static UserWithPassword syncUser;
 
   public ServiceRunner() {
@@ -366,6 +367,22 @@ public class ServiceRunner {
     for (final Tenant tenant : tenantsToCreate) {
       try (final AutoSeshat ignored = new AutoSeshat(authenticationResponse.getToken())) {
         provisionAppsViaSeshatForTenant(tenant);
+        allTenants = provisionerService.api().getTenants();
+        logger.info("List of Tenants: {}", allTenants.toString());
+      }
+    }
+
+    int index = 0;
+    try (final AutoTenantContext ignored1 = new AutoTenantContext(allTenants.get(index).getIdentifier())) {
+      final Authentication syncGatewayAuthentication;
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = this.identityManager.api().login(syncUser.getIdentifier(), syncUser.getPassword());
+      }
+
+      try (final AutoUserContext ignored3 = new AutoUserContext(syncUser.getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        logger.info("Sending List of Tenants: {}", allTenants.toString());
+        allTenants.forEach(currentTenant -> this.syncManager.api().findAllEntities());
+        logger.info("Sent List of Tenants: {}", allTenants.toString());
       }
     }
   }
@@ -451,7 +468,7 @@ public class ServiceRunner {
 
       provisionApp(tenant, ServiceRunner.payrollManager, io.mifos.payroll.api.v1.EventConstants.INITIALIZE);
 
-      provisionApp(tenant, ServiceRunner.syncManager, PermittableGroupIds.INITIALIZE);
+      provisionApp(tenant, ServiceRunner.syncManager, io.mifos.sync.api.v1.events.EventConstants.INITIALIZE);
 
       final UserWithPassword orgAdminUserPassword = createOrgAdminRoleAndUser(tenantAdminPassword.getAdminPassword());
       syncUser  = createSyncRoleAndUser(tenantAdminPassword.getAdminPassword());
@@ -674,6 +691,10 @@ public class ServiceRunner {
     customerAllPermission.setAllowedOperations(AllowedOperation.ALL);
     customerAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.customer.PermittableGroupIds.CUSTOMER);
 
+    final Permission syncGatewayAllPermission = new Permission();
+    syncGatewayAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    syncGatewayAllPermission.setPermittableEndpointGroupIdentifier(PermittableGroupIds.SYNC_MANAGEMENT);
+
     final Role role = new Role();
     role.setIdentifier("syncgateway");
     role.setPermissions(
@@ -685,7 +706,8 @@ public class ServiceRunner {
                     selfManagementPermission,
                     ledgerManagementPermission,
                     accountManagementPermission,
-                    customerAllPermission
+                    customerAllPermission,
+                    syncGatewayAllPermission
             )
     );
 
@@ -747,4 +769,15 @@ public class ServiceRunner {
     return organizationManager;
   }
 
+  public static Microservice<LedgerManager> getLedgerManager() {
+    return ledgerManager;
+  }
+
+  public static Microservice<SyncManager> getSyncManager() {
+    return syncManager;
+  }
+
+  public List<Tenant> getAllTenants() {
+    return allTenants;
+  }
 }
