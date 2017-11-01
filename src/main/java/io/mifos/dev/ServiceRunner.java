@@ -353,9 +353,9 @@ public class ServiceRunner {
     );
 
     final List<Tenant> tenantsToCreate = Arrays.asList(
-        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "playground", "A place to mess around and have fun", "playground")
-        //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "demo-cccu", "Demo for CCCU", "demo_cccu"),
-        //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "SKCUKNS1", "St Kitts Cooperative Credit Union", "SKCUKNS1"),
+        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "playground", "A place to mess around and have fun", "playground"),
+        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "demo-cccu", "Demo for CCCU", "demo_cccu"),
+        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "skcukns", "St Kitts Cooperative Credit Union", "skcukns")
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "PCCUKNS1", "Police Cooperative Credit Union", "PCCUKNS1"),
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "FCCUKNS1", "FND Cooperative Credit Union", "FCCUKNS1"),
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "NCCUKNN1", "Nevis Cooperative Credit Union", "NCCUKNN1")
@@ -367,22 +367,22 @@ public class ServiceRunner {
     for (final Tenant tenant : tenantsToCreate) {
       try (final AutoSeshat ignored = new AutoSeshat(authenticationResponse.getToken())) {
         provisionAppsViaSeshatForTenant(tenant);
-        allTenants = provisionerService.api().getTenants();
-        logger.info("List of Tenants: {}", allTenants.toString());
       }
     }
+    try (final AutoSeshat ignored = new AutoSeshat(authenticationResponse.getToken())) {
+      allTenants = provisionerService.api().getTenants();
+      logger.info("List of Tenants: {}", allTenants.toString());
 
-    int index = 0;
-    try (final AutoTenantContext ignored1 = new AutoTenantContext(allTenants.get(index).getIdentifier())) {
-      final Authentication syncGatewayAuthentication;
-      try (final AutoGuest ignored2 = new AutoGuest()) {
-        syncGatewayAuthentication = this.identityManager.api().login(syncUser.getIdentifier(), syncUser.getPassword());
-      }
+      int index = 0;
+      try (final AutoTenantContext ignored1 = new AutoTenantContext(allTenants.get(index).getIdentifier())) {
+        final Authentication syncGatewayAuthentication;
+        try (final AutoGuest ignored2 = new AutoGuest()) {
+          syncGatewayAuthentication = this.identityManager.api().login(syncUser.getIdentifier(), syncUser.getPassword());
+        }
 
-      try (final AutoUserContext ignored3 = new AutoUserContext(syncUser.getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        logger.info("Sending List of Tenants: {}", allTenants.toString());
-        allTenants.forEach(currentTenant -> this.syncManager.api().findAllEntities());
-        logger.info("Sent List of Tenants: {}", allTenants.toString());
+        try (final AutoUserContext ignored3 = new AutoUserContext(syncUser.getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+          allTenants.forEach(currentTenant -> this.syncManager.api().synchronizeTenants(currentTenant));
+        }
       }
     }
   }

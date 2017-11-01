@@ -236,7 +236,6 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
-
     String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted role, {}", identifier);
   }
