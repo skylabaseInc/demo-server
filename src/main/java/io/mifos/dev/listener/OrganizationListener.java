@@ -81,6 +81,10 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Employee employee = serviceRunner.getOrganizationManager().api().findEmployee(identifier);
         logger.info("Created employee: {} {}", employee.getGivenName(), employee.getSurname());
+
+        serviceRunner.getSyncManager().api().createEmployee(tenant, employee);
+
+        logger.info("Synced Newly Create Employee {}", employee.getIdentifier());
       }
     }
   }
