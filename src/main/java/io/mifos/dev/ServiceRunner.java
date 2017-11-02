@@ -354,8 +354,8 @@ public class ServiceRunner {
 
     final List<Tenant> tenantsToCreate = Arrays.asList(
         TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "playground", "A place to mess around and have fun", "playground"),
-        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "demo-cccu", "Demo for CCCU", "demo_cccu"),
-        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "skcukns", "St Kitts Cooperative Credit Union", "skcukns")
+        TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "demo-cccu", "Demo for CCCU", "demo_cccu")
+        //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "skcukns", "St Kitts Cooperative Credit Union", "skcukns")
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "PCCUKNS1", "Police Cooperative Credit Union", "PCCUKNS1"),
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "FCCUKNS1", "FND Cooperative Credit Union", "FCCUKNS1"),
         //TenantBuilder.create(ServiceRunner.provisionerService.getProcessEnvironment(), "NCCUKNN1", "Nevis Cooperative Credit Union", "NCCUKNN1")
