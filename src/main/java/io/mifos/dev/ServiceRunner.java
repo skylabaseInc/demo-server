@@ -773,11 +773,8 @@ public class ServiceRunner {
     return ledgerManager;
   }
 
-  public static Microservice<SyncManager> getSyncManager() {
-    return syncManager;
-  }
+  public static Microservice<CustomerManager> getCustomerManager() { return customerManager; }
 
-  public List<Tenant> getAllTenants() {
-    return allTenants;
-  }
+  public static Microservice<SyncManager> getSyncManager() { return syncManager; }
+
 }
