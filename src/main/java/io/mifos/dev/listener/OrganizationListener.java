@@ -81,10 +81,8 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Employee employee = serviceRunner.getOrganizationManager().api().findEmployee(identifier);
         logger.info("Created employee: {} {}", employee.getGivenName(), employee.getSurname());
-
         serviceRunner.getSyncManager().api().createEmployee(tenant, employee);
-
-        logger.info("Synced Newly Create Employee {}", employee.getIdentifier());
+        logger.info("Synced newly create employee {}", employee.getIdentifier());
       }
     }
   }
@@ -107,6 +105,8 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Employee employee = serviceRunner.getOrganizationManager().api().findEmployee(identifier);
         logger.info("Updated employee: {} {}", employee.getGivenName(), employee.getSurname());
+        serviceRunner.getSyncManager().api().updateEmployee(tenant, employee);
+        logger.info("Synced update employee {}", employee.getIdentifier());
       }
     }
   }
@@ -120,6 +120,8 @@ public class OrganizationListener {
                                final String eventPayload) throws Exception {
     String identifier = eventPayload.replaceAll("^\"|\"$", "");
     logger.info("Deleted employee with identifier: {}", identifier);
+    serviceRunner.getSyncManager().api().deleteEmployee(tenant, identifier);
+    logger.info("Synced delete Employee {}", identifier);
   }
 
   @JmsListener(
@@ -141,6 +143,8 @@ public class OrganizationListener {
         Employee employee = serviceRunner.getOrganizationManager().api().findEmployee(identifier);
         logger.info("Set employee contact details: ");
         employee.getContactDetails().forEach(contactDetail -> logger.info("{}", contactDetail));
+        serviceRunner.getSyncManager().api().updateEmployee(tenant, employee);
+        logger.info("Synced contact details {}", employee.getIdentifier());
       }
     }
   }
@@ -153,7 +157,20 @@ public class OrganizationListener {
   public void onDeleteContactDetail(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                     final String eventPayload) throws Exception {
     String identifier = eventPayload.replaceAll("^\"|\"$", "");
-    logger.info("Deleted contact details for employee with identifier: {}", identifier);
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Employee employee = serviceRunner.getOrganizationManager().api().findEmployee(identifier);
+        logger.info("Delete employee contact details: ");
+        serviceRunner.getSyncManager().api().updateEmployee(tenant, employee);
+        logger.info("Synced deleted contact details {}", employee.getIdentifier());
+      }
+    }
   }
 
   @JmsListener(
@@ -175,6 +192,9 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Office office = serviceRunner.getOrganizationManager().api().findOfficeByIdentifier(identifier);
         logger.info("Created office: {}", office.getName());
+        serviceRunner.getSyncManager().api().createOffice(tenant, office);
+        logger.info("Sync created office: {}", office.getName());
+
       }
     }
   }
@@ -198,6 +218,8 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Office office = serviceRunner.getOrganizationManager().api().findOfficeByIdentifier(identifier);
         logger.info("Updated office: {}", office.getName());
+        serviceRunner.getSyncManager().api().updateOffice(tenant, office);
+        logger.info("Sync updated office: {}", office.getName());
       }
     }
   }
@@ -212,6 +234,8 @@ public class OrganizationListener {
           throws Exception {
     String identifier = eventPayload.replaceAll("^\"|\"$", "");
     logger.info("Deleted office with identifier: {}", identifier);
+    serviceRunner.getSyncManager().api().deleteOffice(tenant, identifier);
+    logger.info("Sync deleted office: {}", identifier);
   }
 
   @JmsListener(
@@ -233,6 +257,8 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Office office = serviceRunner.getOrganizationManager().api().findOfficeByIdentifier(identifier);
         logger.info("Set office address: {} {} {}", office.getAddress().getRegion(), office.getAddress().getCity(), office.getAddress().getStreet());
+        serviceRunner.getSyncManager().api().updateOffice(tenant, office);
+        logger.info("Sync set office address: {}", office.getName());
       }
     }
   }
@@ -247,6 +273,20 @@ public class OrganizationListener {
           throws Exception {
     String identifier = eventPayload.replaceAll("^\"|\"$", "");
     logger.info("Deleted office address with identifier: {}", identifier);
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Office office = serviceRunner.getOrganizationManager().api().findOfficeByIdentifier(identifier);
+        logger.info("Set office address: {} {} {}", office.getAddress().getRegion(), office.getAddress().getCity(), office.getAddress().getStreet());
+        serviceRunner.getSyncManager().api().updateOffice(tenant, office);
+        logger.info("Sync deleted office address: {}", office.getName());
+      }
+    }
   }
 
   @JmsListener(
@@ -268,6 +308,9 @@ public class OrganizationListener {
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Office office = serviceRunner.getOrganizationManager().api().findOfficeByIdentifier(identifier);
         logger.info("Put an external office reference: {}", office.getExternalReferences());
+        serviceRunner.getSyncManager().api().updateOffice(tenant, office);
+        logger.info("Sync add put reference: {}", office.getName());
+
       }
     }
   }
