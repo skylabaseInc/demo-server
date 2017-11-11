@@ -273,6 +273,7 @@ public class CustomerListener {
                                             final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.POST_IDENTIFICATION_CARD, payload, String.class);
 
+    logger.info("Identification card create event {}", payload);
     /*String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
@@ -296,6 +297,7 @@ public class CustomerListener {
                                              final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.PUT_IDENTIFICATION_CARD, payload, String.class);
 
+    logger.info("Identification card change event {}", payload);
     /*String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
@@ -318,6 +320,7 @@ public class CustomerListener {
   public void identificationCardDeletedEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                              final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_IDENTIFICATION_CARD, payload, String.class);
+    logger.info("Identification card delete event {}", payload);
   }
 
   @JmsListener(
@@ -327,6 +330,7 @@ public class CustomerListener {
   public void identificationCardScanCreateEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                                 final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.POST_IDENTIFICATION_CARD_SCAN, payload, ScanEvent.class);
+    logger.info("Identification card scan create event {}", payload);
   }
 
   @JmsListener(
@@ -336,6 +340,7 @@ public class CustomerListener {
   public void identificationCardScanDeleteEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                                 final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_IDENTIFICATION_CARD_SCAN, payload, ScanEvent.class);
+    logger.info("Identification card scan delete event {}", payload);
   }
 
   @JmsListener(
@@ -345,6 +350,7 @@ public class CustomerListener {
   public void portraitPutEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.POST_PORTRAIT, payload, String.class);
+    logger.info("Portrait put event {}", payload);
   }
 
   @JmsListener(
@@ -354,5 +360,6 @@ public class CustomerListener {
   public void portraitDeleteEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                   final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_PORTRAIT, payload, String.class);
+    logger.info("Portrait delete event {}", payload);
   }
 }

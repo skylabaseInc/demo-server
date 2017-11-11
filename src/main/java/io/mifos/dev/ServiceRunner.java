@@ -691,6 +691,14 @@ public class ServiceRunner {
     customerAllPermission.setAllowedOperations(AllowedOperation.ALL);
     customerAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.customer.PermittableGroupIds.CUSTOMER);
 
+    final Permission portfolioAllPermission = new Permission();
+    portfolioAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    portfolioAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.portfolio.api.v1.PermittableGroupIds.PRODUCT_MANAGEMENT);
+
+    final Permission depositAllPermission = new Permission();
+    depositAllPermission.setAllowedOperations(AllowedOperation.ALL);
+    depositAllPermission.setPermittableEndpointGroupIdentifier(io.mifos.deposit.api.v1.PermittableGroupIds.DEFINITION_MANAGEMENT);
+
     final Permission syncGatewayAllPermission = new Permission();
     syncGatewayAllPermission.setAllowedOperations(AllowedOperation.ALL);
     syncGatewayAllPermission.setPermittableEndpointGroupIdentifier(PermittableGroupIds.SYNC_MANAGEMENT);
@@ -707,6 +715,8 @@ public class ServiceRunner {
                     ledgerManagementPermission,
                     accountManagementPermission,
                     customerAllPermission,
+                    portfolioAllPermission,
+                    depositAllPermission,
                     syncGatewayAllPermission
             )
     );
@@ -777,4 +787,5 @@ public class ServiceRunner {
 
   public static Microservice<SyncManager> getSyncManager() { return syncManager; }
 
+  public static Microservice<PortfolioManager> getPortfolioManager() { return portfolioManager; }
 }
