@@ -17,6 +17,8 @@ package io.mifos.dev.listener;
 
 import io.mifos.accounting.api.v1.EventConstants;
 import io.mifos.accounting.api.v1.domain.Account;
+import io.mifos.accounting.api.v1.domain.JournalEntry;
+import io.mifos.accounting.api.v1.domain.Ledger;
 import io.mifos.core.api.context.AutoGuest;
 import io.mifos.core.api.context.AutoUserContext;
 import io.mifos.core.lang.AutoTenantContext;
@@ -69,6 +71,57 @@ public class AccountingListener {
   public void onPostLedger(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                            final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_LEDGER, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
+        logger.info("Created ledger account {}", ledger.getName());
+      }
+    }
+  }
+
+  @JmsListener(
+          destination = EventConstants.DESTINATION,
+          selector = EventConstants.SELECTOR_PUT_LEDGER,
+          subscription = EventConstants.DESTINATION
+  )
+  public void onPutLedger(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                          final String payload) {
+    this.eventRecorder.event(tenant, EventConstants.PUT_LEDGER, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
+        logger.info("Modified ledger account {}", ledger.getName());
+      }
+    }
+  }
+
+  @JmsListener(
+          destination = EventConstants.DESTINATION,
+          selector = EventConstants.SELECTOR_DELETE_LEDGER,
+          subscription = EventConstants.DESTINATION
+  )
+  public void onDeleteLedger(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                             final String payload) {
+    this.eventRecorder.event(tenant, EventConstants.DELETE_LEDGER, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    logger.info("Deleted ledger account, {}", identifier);
   }
 
   @JmsListener(
@@ -114,7 +167,7 @@ public class AccountingListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
-        logger.info("Account modified {}", account.getName());
+        logger.info("Modified account {}", account.getName());
       }
     }
   }
@@ -138,7 +191,7 @@ public class AccountingListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
-        logger.info("Account {} {}", account.getName(), account.getState());
+        logger.info("Account closed: {} {}", account.getName(), account.getState());
       }
     }
   }
@@ -162,7 +215,7 @@ public class AccountingListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
-        logger.info("Account {} {} ", account.getName(), account.getState());
+        logger.info("Account locked: {} {} ", account.getName(), account.getState());
       }
     }
   }
@@ -174,8 +227,21 @@ public class AccountingListener {
   )
   public void onUnlockAccount(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                               final String payload) {
-    this.logger.debug("Account unlocked.");
     this.eventRecorder.event(tenant, EventConstants.UNLOCK_ACCOUNT, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        logger.info("Account unlocked: {} {} ", account.getName(), account.getState());
+      }
+    }
   }
 
   @JmsListener(
@@ -185,8 +251,21 @@ public class AccountingListener {
   )
   public void onReopenAccount(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                               final String payload) {
-    this.logger.debug("Account reopened.");
     this.eventRecorder.event(tenant, EventConstants.REOPEN_ACCOUNT, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        logger.info("Account reopened: {} {} ", account.getName(), account.getState());
+      }
+    }
   }
 
   @JmsListener(
@@ -199,7 +278,7 @@ public class AccountingListener {
     this.eventRecorder.event(tenant, EventConstants.DELETE_ACCOUNT, payload, String.class);
 
     String identifier = payload.replaceAll("^\"|\"$", "");
-    logger.info("Account deleted, {}", identifier);
+    logger.info("Deleted account, {}", identifier);
   }
 
   @JmsListener(
@@ -208,9 +287,22 @@ public class AccountingListener {
           subscription = EventConstants.DESTINATION
   )
   public void onPostJournalEntry(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
-                                 final String transactionIdentifier) {
-    this.logger.debug("Journal entry created");
-    this.eventRecorder.event(tenant, EventConstants.POST_JOURNAL_ENTRY, transactionIdentifier, String.class);
+                                 final String payload) {
+    this.eventRecorder.event(tenant, EventConstants.POST_JOURNAL_ENTRY, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
+        logger.info("Journal entry created ( creditor:{}, debtor:{} )", journalEntry.getCreditors(), journalEntry.getDebtors());
+      }
+    }
   }
 
   @JmsListener(
@@ -219,8 +311,21 @@ public class AccountingListener {
           subscription = EventConstants.DESTINATION
   )
   public void onJournalEntryProcessed(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
-                                      final String transactionIdentifier) {
-    this.logger.debug("Journal entry processed");
-    this.eventRecorder.event(tenant, EventConstants.RELEASE_JOURNAL_ENTRY, transactionIdentifier, String.class);
+                                      final String payload) {
+    this.eventRecorder.event(tenant, EventConstants.RELEASE_JOURNAL_ENTRY, payload, String.class);
+
+    String identifier = payload.replaceAll("^\"|\"$", "");
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
+        logger.info("Journal entry processed ( {} {} )", journalEntry.getCreditors(), journalEntry.getDebtors());
+      }
+    }
   }
 }
