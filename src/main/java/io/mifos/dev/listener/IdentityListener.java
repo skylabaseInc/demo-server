@@ -21,7 +21,9 @@ import io.mifos.core.lang.AutoTenantContext;
 import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.dev.ServiceRunner;
+import io.mifos.dev.helper.StringHelper;
 import io.mifos.identity.api.v1.domain.Authentication;
+import io.mifos.identity.api.v1.domain.PermittableGroup;
 import io.mifos.identity.api.v1.domain.Role;
 import io.mifos.identity.api.v1.domain.User;
 import io.mifos.identity.api.v1.events.ApplicationPermissionEvent;
@@ -65,7 +67,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_USER, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -75,7 +77,8 @@ public class IdentityListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
-        logger.info("Created user {} with role {}", user.getIdentifier(), user.getRole());
+        serviceRunner.getSyncManager().api().createUser(user);
+        logger.info("Synced created user {} with role {}", user.getIdentifier(), user.getRole());
       }
     }
   }
@@ -90,7 +93,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_ROLEIDENTIFIER, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -100,7 +103,8 @@ public class IdentityListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
-        logger.info("Updated user {} role {}", user.getIdentifier(), user.getRole());
+        serviceRunner.getSyncManager().api().updateUser(user);
+        logger.info("Synced Updated user {} role {}", user.getIdentifier(), user.getRole());
       }
     }
   }
@@ -115,7 +119,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_PASSWORD, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -125,6 +129,7 @@ public class IdentityListener {
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
         final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        serviceRunner.getSyncManager().api().updateUser(user);
         logger.info("Updated user {} password", user.getIdentifier());
       }
     }
@@ -139,6 +144,20 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_PERMITTABLE_GROUP, payload, String.class);
+    final String identifier = StringHelper.cleanString(payload);
+    try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
+      final Authentication syncGatewayAuthentication;
+
+      try (final AutoGuest ignored2 = new AutoGuest()) {
+        syncGatewayAuthentication = serviceRunner.getIdentityManager().api().login(serviceRunner.getSyncUser().getIdentifier(), serviceRunner.getSyncUser().getPassword());
+      }
+
+      try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
+        final PermittableGroup permittableGroup = serviceRunner.getIdentityManager().api().getPermittableGroup(identifier);
+        serviceRunner.getSyncManager().api().createPermittableGroup(permittableGroup);
+        logger.info("Synced Created Permiitablegroup {} password", permittableGroup.getIdentifier());
+      }
+    }
   }
 
   @JmsListener(
@@ -184,7 +203,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_ROLE, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -210,7 +229,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_ROLE, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -235,7 +254,7 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     logger.info("Deleted role, {}", identifier);
   }
 }
