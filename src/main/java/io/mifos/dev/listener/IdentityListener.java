@@ -21,6 +21,7 @@ import io.mifos.core.lang.AutoTenantContext;
 import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.dev.ServiceRunner;
+import io.mifos.dev.helper.StringHelper;
 import io.mifos.identity.api.v1.domain.Authentication;
 import io.mifos.identity.api.v1.domain.PermittableGroup;
 import io.mifos.identity.api.v1.domain.Role;
@@ -66,7 +67,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_USER, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -92,7 +93,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_ROLEIDENTIFIER, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -118,7 +119,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_PASSWORD, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -143,7 +144,7 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_PERMITTABLE_GROUP, payload, String.class);
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -202,7 +203,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_ROLE, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -228,7 +229,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_ROLE, payload, String.class);
 
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -253,7 +254,7 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
-    final String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(payload);
     logger.info("Deleted role, {}", identifier);
   }
 }

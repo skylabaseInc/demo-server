@@ -21,6 +21,7 @@ import io.mifos.core.lang.AutoTenantContext;
 import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.dev.ServiceRunner;
+import io.mifos.dev.helper.StringHelper;
 import io.mifos.identity.api.v1.domain.Authentication;
 import io.mifos.office.api.v1.EventConstants;
 import io.mifos.office.api.v1.domain.Employee;
@@ -70,7 +71,7 @@ public class OrganizationListener {
   public void onCreateEmployee(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                final String eventPayload) throws Exception {
 
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -93,7 +94,7 @@ public class OrganizationListener {
   )
   public void onUpdateEmployee(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                final String eventPayload) throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -116,7 +117,7 @@ public class OrganizationListener {
   )
   public void onDeleteEmployee(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                final String eventPayload) throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     serviceRunner.getSyncManager().api().deleteEmployee(identifier);
     logger.info("Synced delete Employee {}", identifier);
   }
@@ -128,7 +129,7 @@ public class OrganizationListener {
   )
   public void onSetContactDetail(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                  final String eventPayload) throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -151,7 +152,7 @@ public class OrganizationListener {
   )
   public void onDeleteContactDetail(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                     final String eventPayload) throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -175,7 +176,7 @@ public class OrganizationListener {
   public void onCreateOffice(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                              final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -200,7 +201,7 @@ public class OrganizationListener {
   public void onUpdateOffice(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                              final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -224,7 +225,7 @@ public class OrganizationListener {
   public void onDeleteOffice(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                              final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     serviceRunner.getSyncManager().api().deleteOffice(identifier);
     logger.info("Sync deleted office: {}", identifier);
   }
@@ -237,7 +238,7 @@ public class OrganizationListener {
   public void onSetAddress(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                            final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -261,7 +262,7 @@ public class OrganizationListener {
   public void onDeleteAddress(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                               final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -285,7 +286,7 @@ public class OrganizationListener {
   public void onPutAReference(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                               final String eventPayload)
           throws Exception {
-    final String identifier = eventPayload.replaceAll("^\"|\"$", "");
+    final String identifier = StringHelper.cleanString(eventPayload);
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
