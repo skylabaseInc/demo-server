@@ -22,7 +22,6 @@ import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.dev.ServiceRunner;
 import io.mifos.identity.api.v1.domain.Authentication;
-import io.mifos.identity.api.v1.domain.PermittableGroup;
 import io.mifos.identity.api.v1.domain.Role;
 import io.mifos.identity.api.v1.domain.User;
 import io.mifos.identity.api.v1.events.ApplicationPermissionEvent;
@@ -66,7 +65,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_USER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -75,7 +74,7 @@ public class IdentityListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
         logger.info("Created user {} with role {}", user.getIdentifier(), user.getRole());
       }
     }
@@ -91,7 +90,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_ROLEIDENTIFIER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -100,7 +99,7 @@ public class IdentityListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
         logger.info("Updated user {} role {}", user.getIdentifier(), user.getRole());
       }
     }
@@ -116,7 +115,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_USER_PASSWORD, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -125,7 +124,7 @@ public class IdentityListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        User user = serviceRunner.getIdentityManager().api().getUser(identifier);
+        final User user = serviceRunner.getIdentityManager().api().getUser(identifier);
         logger.info("Updated user {} password", user.getIdentifier());
       }
     }
@@ -185,7 +184,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_POST_ROLE, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -194,7 +193,7 @@ public class IdentityListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
+        final Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
         logger.info("Created role, {}", role.getIdentifier());
         role.getPermissions().forEach(permission -> logger.info("{}", permission.getPermittableEndpointGroupIdentifier()));
       }
@@ -211,7 +210,7 @@ public class IdentityListener {
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_PUT_ROLE, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -220,7 +219,7 @@ public class IdentityListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
+        final Role role = serviceRunner.getIdentityManager().api().getRole(identifier);
         logger.info("Updated role, {}", role.getIdentifier());
         role.getPermissions().forEach(permission -> logger.info("{}", permission.getPermittableEndpointGroupIdentifier()));
       }
@@ -236,7 +235,7 @@ public class IdentityListener {
           @Header(TenantHeaderFilter.TENANT_HEADER)final String tenant,
           final String payload) throws Exception {
     eventRecorder.event(tenant, EventConstants.OPERATION_DELETE_ROLE, payload, String.class);
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted role, {}", identifier);
   }
 }

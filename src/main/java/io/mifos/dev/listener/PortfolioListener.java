@@ -24,8 +24,6 @@ import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.dev.ServiceRunner;
 import io.mifos.identity.api.v1.domain.Authentication;
-import io.mifos.individuallending.api.v1.events.IndividualLoanCommandEvent;
-import io.mifos.individuallending.api.v1.events.IndividualLoanEventConstants;
 import io.mifos.portfolio.api.v1.domain.BalanceSegmentSet;
 import io.mifos.portfolio.api.v1.domain.Case;
 import io.mifos.portfolio.api.v1.domain.ChargeDefinition;
@@ -80,7 +78,7 @@ public class PortfolioListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_PRODUCT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -89,7 +87,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
+        final Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
         logger.info("Create product {}", product.getName());
       }
     }
@@ -104,7 +102,7 @@ public class PortfolioListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_PRODUCT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -113,7 +111,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
+        final Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
         logger.info("Update product {}", product.getName());
       }
     }
@@ -128,7 +126,7 @@ public class PortfolioListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_PRODUCT_ENABLE, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -137,7 +135,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
+        final Product product = serviceRunner.getPortfolioManager().api().getProduct(identifier);
         logger.info("Enable product: {} {}", product.getName(), product.isEnabled());
       }
     }
@@ -151,7 +149,7 @@ public class PortfolioListener {
   public void onDeleteProduct(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.DELETE_PRODUCT, payload, String.class);
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted product, {}", identifier);
   }
 
@@ -164,7 +162,7 @@ public class PortfolioListener {
                                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_CHARGE_DEFINITION, payload, ChargeDefinitionEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -173,7 +171,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        ChargeDefinition chargeDefinition = serviceRunner.getPortfolioManager().api().getChargeDefinition(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("chargeDefinitionIdentifier").getAsString());
+        final ChargeDefinition chargeDefinition = serviceRunner.getPortfolioManager().api().getChargeDefinition(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("chargeDefinitionIdentifier").getAsString());
         logger.info("Create product charge definition: {}", chargeDefinition.getName());
       }
     }
@@ -188,7 +186,7 @@ public class PortfolioListener {
                                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_CHARGE_DEFINITION, payload, ChargeDefinitionEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -197,7 +195,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        ChargeDefinition chargeDefinition = serviceRunner.getPortfolioManager().api().getChargeDefinition(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("chargeDefinitionIdentifier").getAsString());
+        final ChargeDefinition chargeDefinition = serviceRunner.getPortfolioManager().api().getChargeDefinition(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("chargeDefinitionIdentifier").getAsString());
         logger.info("Update product charge definition: {}", chargeDefinition.getName());
       }
     }
@@ -211,7 +209,7 @@ public class PortfolioListener {
   public void onDeleteProductChargeDefinition(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.DELETE_PRODUCT_CHARGE_DEFINITION, payload, ChargeDefinitionEvent.class);
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     logger.info("Deleted product charge: {}, for product {}", jsonObj.get("productIdentifier").getAsString(), jsonObj.get("chargeDefinitionIdentifier").getAsString());
   }
 
@@ -224,7 +222,7 @@ public class PortfolioListener {
                            final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_CASE, payload, CaseEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -233,7 +231,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Case newCase = serviceRunner.getPortfolioManager().api().getCase(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("caseIdentifier").getAsString());
+        final Case newCase = serviceRunner.getPortfolioManager().api().getCase(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("caseIdentifier").getAsString());
         logger.info("Create case: {}", newCase.getProductIdentifier());
       }
     }
@@ -248,7 +246,7 @@ public class PortfolioListener {
                            final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_CASE, payload, CaseEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -257,7 +255,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Case newCase = serviceRunner.getPortfolioManager().api().getCase(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("caseIdentifier").getAsString());
+        final Case newCase = serviceRunner.getPortfolioManager().api().getCase(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("caseIdentifier").getAsString());
         logger.info("Update case: {}", newCase.getProductIdentifier());
       }
     }
@@ -272,7 +270,7 @@ public class PortfolioListener {
                                         final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_BALANCE_SEGMENT_SET, payload, BalanceSegmentSetEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -281,7 +279,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        BalanceSegmentSet balanceSegmentSet = serviceRunner.getPortfolioManager().api().getBalanceSegmentSet(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("balanceSegmentSetIdentifier").getAsString());
+        final BalanceSegmentSet balanceSegmentSet = serviceRunner.getPortfolioManager().api().getBalanceSegmentSet(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("balanceSegmentSetIdentifier").getAsString());
         logger.info("Create balance segment set: {}", balanceSegmentSet.getIdentifier());
       }
     }
@@ -296,7 +294,7 @@ public class PortfolioListener {
                                         final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_BALANCE_SEGMENT_SET, payload, BalanceSegmentSetEvent.class);
 
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -305,7 +303,7 @@ public class PortfolioListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        BalanceSegmentSet balanceSegmentSet = serviceRunner.getPortfolioManager().api().getBalanceSegmentSet(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("balanceSegmentSetIdentifier").getAsString());
+        final BalanceSegmentSet balanceSegmentSet = serviceRunner.getPortfolioManager().api().getBalanceSegmentSet(jsonObj.get("productIdentifier").getAsString(), jsonObj.get("balanceSegmentSetIdentifier").getAsString());
         logger.info("Update balance segment set: {}", balanceSegmentSet.getIdentifier());
       }
     }
@@ -319,7 +317,7 @@ public class PortfolioListener {
   public void onDeleteBalanceSegmentSet(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                         final String payload) {
     this.eventRecorder.event(tenant, EventConstants.DELETE_BALANCE_SEGMENT_SET, payload, BalanceSegmentSetEvent.class);
-    JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
+    final JsonObject jsonObj = new JsonParser().parse(payload).getAsJsonObject();
     logger.info("Delete balance segment set: {}", jsonObj.get("productIdentifier").getAsString(), jsonObj.get("balanceSegmentSetIdentifier").getAsString());
   }
 

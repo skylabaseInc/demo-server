@@ -72,7 +72,7 @@ public class AccountingListener {
                            final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_LEDGER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -81,7 +81,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
+        final Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
         logger.info("Created ledger account {}", ledger.getName());
       }
     }
@@ -96,7 +96,7 @@ public class AccountingListener {
                           final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_LEDGER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -105,7 +105,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
+        final Ledger ledger = serviceRunner.getLedgerManager().api().findLedger(identifier);
         logger.info("Modified ledger account {}", ledger.getName());
       }
     }
@@ -120,7 +120,7 @@ public class AccountingListener {
                              final String payload) {
     this.eventRecorder.event(tenant, EventConstants.DELETE_LEDGER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted ledger account, {}", identifier);
   }
 
@@ -133,7 +133,7 @@ public class AccountingListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -142,7 +142,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Created account {}", account.getName());
       }
     }
@@ -157,7 +157,7 @@ public class AccountingListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.PUT_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -166,7 +166,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Modified account {}", account.getName());
       }
     }
@@ -190,7 +190,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Account closed: {} {}", account.getName(), account.getState());
       }
     }
@@ -205,7 +205,7 @@ public class AccountingListener {
                             final String payload) {
     this.eventRecorder.event(tenant, EventConstants.LOCK_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -214,7 +214,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Account locked: {} {} ", account.getName(), account.getState());
       }
     }
@@ -229,7 +229,7 @@ public class AccountingListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.UNLOCK_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -238,7 +238,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Account unlocked: {} {} ", account.getName(), account.getState());
       }
     }
@@ -253,7 +253,7 @@ public class AccountingListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.REOPEN_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -262,7 +262,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
+        final Account account = serviceRunner.getLedgerManager().api().findAccount(identifier);
         logger.info("Account reopened: {} {} ", account.getName(), account.getState());
       }
     }
@@ -277,7 +277,7 @@ public class AccountingListener {
                               final String payload) {
     this.eventRecorder.event(tenant, EventConstants.DELETE_ACCOUNT, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     logger.info("Deleted account, {}", identifier);
   }
 
@@ -290,7 +290,7 @@ public class AccountingListener {
                                  final String payload) {
     this.eventRecorder.event(tenant, EventConstants.POST_JOURNAL_ENTRY, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -299,7 +299,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
+        final JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
         logger.info("Journal entry created ( creditor:{}, debtor:{} )", journalEntry.getCreditors(), journalEntry.getDebtors());
       }
     }
@@ -314,7 +314,7 @@ public class AccountingListener {
                                       final String payload) {
     this.eventRecorder.event(tenant, EventConstants.RELEASE_JOURNAL_ENTRY, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -323,7 +323,7 @@ public class AccountingListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
+        final JournalEntry journalEntry = serviceRunner.getLedgerManager().api().findJournalEntry(identifier);
         logger.info("Journal entry processed ( {} {} )", journalEntry.getCreditors(), journalEntry.getDebtors());
       }
     }
