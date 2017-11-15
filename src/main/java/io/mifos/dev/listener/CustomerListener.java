@@ -49,9 +49,9 @@ public class CustomerListener {
   }
 
   @JmsListener(
-      subscription = CustomerEventConstants.DESTINATION,
-      destination = CustomerEventConstants.DESTINATION,
-      selector = CustomerEventConstants.SELECTOR_INITIALIZE
+          subscription = CustomerEventConstants.DESTINATION,
+          destination = CustomerEventConstants.DESTINATION,
+          selector = CustomerEventConstants.SELECTOR_INITIALIZE
   )
   public void onInitialized(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                             final String payload) {
@@ -66,7 +66,7 @@ public class CustomerListener {
                                    final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.POST_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -75,7 +75,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Created customer {}", customer.getGivenName());
       }
     }
@@ -89,7 +89,7 @@ public class CustomerListener {
                                     final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.PUT_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -98,7 +98,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Updated customer {}", customer.getGivenName());
       }
     }
@@ -112,7 +112,7 @@ public class CustomerListener {
                                      final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.ACTIVATE_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -121,7 +121,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer activated: {} {}", customer.getGivenName(), customer.getCurrentState());
       }
     }
@@ -135,7 +135,7 @@ public class CustomerListener {
                                   final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.LOCK_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -144,7 +144,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer locked: {} {}", customer.getGivenName(), customer.getCurrentState());
       }
     }
@@ -158,7 +158,7 @@ public class CustomerListener {
                                     final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.UNLOCK_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -167,7 +167,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer unlocked: {} {}", customer.getGivenName(), customer.getCurrentState());
       }
     }
@@ -181,7 +181,7 @@ public class CustomerListener {
                                   final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.CLOSE_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -190,7 +190,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer closed: {} {}", customer.getGivenName(), customer.getCurrentState());
       }
     }
@@ -204,7 +204,7 @@ public class CustomerListener {
                                     final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.REOPEN_CUSTOMER, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -213,7 +213,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer reopen: {} {}", customer.getGivenName(), customer.getCurrentState());
       }
     }
@@ -227,7 +227,7 @@ public class CustomerListener {
                                   final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.PUT_ADDRESS, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -236,7 +236,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer address modified: {} {}...", customer.getGivenName(), customer.getAddress().getCountry());
       }
     }
@@ -250,7 +250,7 @@ public class CustomerListener {
                                          final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.PUT_CONTACT_DETAILS, payload, String.class);
 
-    String identifier = payload.replaceAll("^\"|\"$", "");
+    final String identifier = payload.replaceAll("^\"|\"$", "");
     try (final AutoTenantContext ignored = new AutoTenantContext(tenant)) {
       final Authentication syncGatewayAuthentication;
 
@@ -259,7 +259,7 @@ public class CustomerListener {
       }
 
       try (final AutoUserContext ignored2 = new AutoUserContext(serviceRunner.getSyncUser().getIdentifier(), syncGatewayAuthentication.getAccessToken())) {
-        Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
+        final Customer customer = serviceRunner.getCustomerManager().api().findCustomer(identifier);
         logger.info("Customer contact details modified: {} {}...", customer.getGivenName(), customer.getContactDetails().get(0).getValue());
       }
     }
